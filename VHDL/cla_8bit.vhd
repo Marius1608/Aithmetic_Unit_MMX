@@ -1,6 +1,6 @@
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+
 
 entity cla_8bit is
     Port (
@@ -12,14 +12,15 @@ entity cla_8bit is
     );
 end cla_8bit;
 
+
 architecture Behavioral of cla_8bit is
     signal p_int, g_int : std_logic_vector(7 downto 0);  
     signal c : std_logic_vector(8 downto 0);  
 begin
     
     p_gen: for i in 0 to 7 generate
-        p_int(i) <= a(i) xor b(i); -- indicã dacã bi?ii pot propaga carry
-        g_int(i) <= a(i) and b(i); -- indicã dacã bi?ii genereazã carry
+        p_int(i) <= a(i) xor b(i); -- indica daca bitii pot propaga carry
+        g_int(i) <= a(i) and b(i); -- indica daca bitii genereaza carry
     end generate;
 
   
@@ -36,9 +37,9 @@ begin
             (p_int(3) and p_int(2) and p_int(1) and g_int(0)) or 
             (p_int(3) and p_int(2) and p_int(1) and p_int(0) and c(0));
     c(5) <= g_int(4) or (p_int(4) and c(4));
-    c(6) <= g_int(5) or (p_int(5) and c(5));
-    c(7) <= g_int(6) or (p_int(6) and c(6));
-    c(8) <= g_int(7) or (p_int(7) and c(7));
+    c(6) <= g_int(5) or (p_int(5) and (g_int(4) or (p_int(4) and c(4))));
+    c(7) <= g_int(6) or (p_int(6) and (g_int(5) or (p_int(5) and (g_int(4) or (p_int(4) and c(4))))));
+    c(8) <= g_int(7) or (p_int(7) and (g_int(6) or (p_int(6) and (g_int(5) or (p_int(5) and (g_int(4) or (p_int(4) and c(4))))))));
 
     
     --generarea sumei   
