@@ -19,15 +19,14 @@ architecture Behavioral of cla_8bit is
 begin
     
     p_gen: for i in 0 to 7 generate
-        p_int(i) <= a(i) xor b(i); -- indica daca bitii pot propaga carry
-        g_int(i) <= a(i) and b(i); -- indica daca bitii genereaza carry
+        p_int(i) <= a(i) xor b(i); -- indicates if bits can propagate carry
+        g_int(i) <= a(i) and b(i); -- indicates if bits generate carry
     end generate;
 
-  
     p <= p_int;
     g <= g_int;
 
-    --logica de propagare 
+    -- carry propagation logic
     c(0) <= cin;
     c(1) <= g_int(0) or (p_int(0) and c(0));
     c(2) <= g_int(1) or (p_int(1) and g_int(0)) or (p_int(1) and p_int(0) and c(0));
@@ -41,12 +40,10 @@ begin
     c(7) <= g_int(6) or (p_int(6) and (g_int(5) or (p_int(5) and (g_int(4) or (p_int(4) and c(4))))));
     c(8) <= g_int(7) or (p_int(7) and (g_int(6) or (p_int(6) and (g_int(5) or (p_int(5) and (g_int(4) or (p_int(4) and c(4))))))));
 
-    
-    --generarea sumei   
+    -- sum generation
     sum_gen: for i in 0 to 7 generate
         sum(i) <= p_int(i) xor c(i);
     end generate;
 
-    
-    cout <= c(8); --ultimul carry devine cel de iesire
+    cout <= c(8); -- last carry becomes the output carry
 end Behavioral;

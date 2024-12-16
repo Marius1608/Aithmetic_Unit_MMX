@@ -2,6 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
+
 entity parallel_compare_equality is
     Port (
         a, b : in std_logic_vector(63 downto 0);
@@ -10,6 +11,7 @@ entity parallel_compare_equality is
         result : out std_logic_vector(63 downto 0)
     );
 end parallel_compare_equality;
+
 
 architecture Behavioral of parallel_compare_equality is
     component compare_8bit is

@@ -7,7 +7,7 @@ entity padd_psub_wraparound is
     Port (
         a, b     : in  std_logic_vector(63 downto 0);
         operation: in  std_logic_vector(2 downto 0); 
-        -- operation(2) = scãdere ('1') /adunare ('0')
+        -- operation(2) =  add('0') / sub('0')
         -- operation(1:0) = dimensiune operanzi (00=byte, 01=word, 10=dword)
         result   : out std_logic_vector(63 downto 0)
     );

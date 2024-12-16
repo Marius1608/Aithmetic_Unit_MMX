@@ -1,63 +1,50 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_signed.all;
+
 
 entity pmul is
-    Port (
-        a, b : in STD_LOGIC_VECTOR(63 downto 0);
-        op : in STD_LOGIC;
-        result : out STD_LOGIC_VECTOR(63 downto 0)
+    port (
+        a, b : in std_logic_vector(63 downto 0);
+        op : in std_logic; -- '0' for pmullw, '1' for pmulhw
+        result : out std_logic_vector(63 downto 0)
     );
 end pmul;
 
-architecture Behavioral of pmul is
-    component WallaceMultiplier16bit is 
-        Port (
-            x, y : in STD_LOGIC_VECTOR(15 downto 0);
-            p : out STD_LOGIC_VECTOR(31 downto 0)
+
+architecture behavioral of pmul is
+    component booth_multiplier is
+        port(
+            m : in std_logic_vector(7 downto 0);
+            r : in std_logic_vector(7 downto 0);
+            result : out std_logic_vector(15 downto 0)
         );
     end component;
 
-    signal mul_result0, mul_result1, mul_result2, mul_result3 : STD_LOGIC_VECTOR(31 downto 0);
+    type mul_results_array is array (0 to 7) of std_logic_vector(15 downto 0);
+    signal mul_results : mul_results_array;
+    
 begin
-    -- Instantiate 4 16-bit Wallace multipliers
-    mul0: WallaceMultiplier16bit port map(
-        x => a(15 downto 0),
-        y => b(15 downto 0),
-        p => mul_result0
-    );
     
-    mul1: WallaceMultiplier16bit port map(
-        x => a(31 downto 16),
-        y => b(31 downto 16),
-        p => mul_result1
-    );
-    
-    mul2: WallaceMultiplier16bit port map(
-        x => a(47 downto 32),
-        y => b(47 downto 32),
-        p => mul_result2
-    );
-    
-    mul3: WallaceMultiplier16bit port map(
-        x => a(63 downto 48),
-        y => b(63 downto 48),
-        p => mul_result3
-    );
+    gen_mul: for i in 0 to 7 generate
+        multi: booth_multiplier port map (
+            m => a((i*8+7) downto (i*8)),
+            r => b((i*8+7) downto (i*8)),
+            result => mul_results(i)
+        );
+    end generate;
 
-    
-    process(op, mul_result0, mul_result1, mul_result2, mul_result3)
+    process(mul_results, op)
     begin
-        if op = '0' then -- pmullw
-            result(15 downto 0) <= mul_result0(15 downto 0);
-            result(31 downto 16) <= mul_result1(15 downto 0);
-            result(47 downto 32) <= mul_result2(15 downto 0);
-            result(63 downto 48) <= mul_result3(15 downto 0);
-        else -- pmulhw
-            result(15 downto 0) <= mul_result0(31 downto 16);
-            result(31 downto 16) <= mul_result1(31 downto 16);
-            result(47 downto 32) <= mul_result2(31 downto 16);
-            result(63 downto 48) <= mul_result3(31 downto 16);
-        end if;
+        for i in 0 to 7 loop
+            if op = '0' then
+                -- PMULLW: lower byte
+                result((i*8+7) downto (i*8)) <= mul_results(i)(7 downto 0);
+            else
+                -- PMULHW: upper byte
+                result((i*8+7) downto (i*8)) <= mul_results(i)(15 downto 8);
+            end if;
+        end loop;
     end process;
-end Behavioral;
+
+end behavioral;
